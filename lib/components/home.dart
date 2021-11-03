@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:project/move.dart';
-import 'package:project/player.dart';
-import 'package:project/winner.dart';
+import 'package:project/components/move.dart';
+import 'package:project/models/player.dart';
+import 'package:project/components/winner.dart';
 
 class MyHomePage extends StatefulWidget {
-  MyHomePage({Key? key, required this.title}) : super(key: key);
+  MyHomePage({Key? key, required this.player1, required this.player2})
+      : super(key: key);
 
+  String player1;
+  String player2;
   // This widget is the home page of your application. It is stateful, meaning
   // that it has a State object (defined below) that contains fields that affect
   // how it looks.
@@ -15,46 +18,43 @@ class MyHomePage extends StatefulWidget {
   // used by the build method of the State. Fields in a Widget subclass are
   // always marked "final".
 
-  final String title;
-
   @override
   _MyHomePageState createState() => _MyHomePageState();
 }
 
 class _MyHomePageState extends State<MyHomePage> {
   List<Widget> result = [];
+
   late String winner;
+  late String loser;
+  late bool isTie;
+
   late Player piggie;
   late Player baby;
 
   _MyHomePageState() {
     winner = '';
+    loser = '';
+    isTie = false;
     piggie = new Player(
-        name: "Player1",
-        turnToPlay: false,
-        color: Colors.pinkAccent,
-        moves: []);
+        name: '', turnToPlay: false, color: Colors.pinkAccent, moves: []);
 
     baby = new Player(
-        name: "Player2", turnToPlay: true, color: Colors.blueAccent, moves: []);
+        name: '', turnToPlay: true, color: Colors.blueAccent, moves: []);
 
     for (var i = 1; i <= 9; i++) {
       result.add(Move(position: i, color: Colors.white, callback: callback));
     }
   }
 
+  void clicked(position) {}
+
   void callback(position) {
     addMove(position);
-    // List<Widget> updated = [];
-    // for (int i = 1; i <= 9; i++) {
-    //   if (position == i) {
-    //     updated.add(Move(position: i, color: getColor(), callback: callback));
-    //   } else
-    //     updated.add(Move(position: i, color: Colors.white, callback: callback));
-    // }
+
     setState(() {
       result[position - 1] =
-          Move(position: position, color: getColor(), callback: callback);
+          Move(position: position, color: getColor(), callback: clicked);
     });
 
     calculation();
@@ -93,7 +93,9 @@ class _MyHomePageState extends State<MyHomePage> {
 
       if (piggie.moves.length + baby.moves.length == 9) {
         setState(() {
-          winner = 'Tie!';
+          winner = piggie.name;
+          loser = baby.name;
+          isTie = true;
         });
       }
 
@@ -102,12 +104,14 @@ class _MyHomePageState extends State<MyHomePage> {
           if (checkSublist(piggie.moves, a[i])) {
             setState(() {
               winner = piggie.name;
+              loser = baby.name;
             });
           }
         } else {
           if (checkSublist(baby.moves, a[i])) {
             setState(() {
               winner = baby.name;
+              loser = piggie.name;
             });
           }
         }
@@ -124,7 +128,6 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   Color getColor() {
-    print("Get Color");
     if (piggie.turnToPlay)
       return piggie.color;
     else
@@ -143,18 +146,23 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   Widget build(BuildContext context) {
+    piggie.setName(widget.player1);
+    baby.setName(widget.player2);
+
     if (winner.isNotEmpty) {
       Future.delayed(const Duration(microseconds: 10), () {
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => Winner(winner: winner)),
+          MaterialPageRoute(
+              builder: (context) =>
+                  Winner(winner: winner, loser: loser, isTie: isTie)),
         );
       });
     }
 
     return Scaffold(
         appBar: AppBar(
-          title: Text(widget.title),
+          title: Text('TicTacToe'),
           automaticallyImplyLeading: false,
         ),
         body: Center(

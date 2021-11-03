@@ -1,6 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:project/player.dart';
+import 'package:project/models/player.dart';
 
 class Move extends StatefulWidget {
   int position;
